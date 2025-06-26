@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOR+NAP Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Chargement des données...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>◆ FOR+NAP Admin ◆</h1>
+                <span>Panel de gestion des membres</span>
+            </div>
+            <div class="header-actions">
+                <button id="refreshBtn" class="btn-refresh" title="Actualiser">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="exportBtn" class="btn-export" title="Exporter CSV">
+                    <i class="fas fa-download"></i> Exporter
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Tab Navigation -->
+        <section class="tabs-section">
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="members">
+                    <i class="fas fa-users"></i>
+                    <span>Membres</span>
+                    <span class="tab-count" id="membersCount">0</span>
+                </button>
+                <button class="tab-btn" data-tab="interested">
+                    <i class="fas fa-heart"></i>
+                    <span>Intéressés</span>
+                    <span class="tab-count" id="interestedCount">0</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Members Tab Content -->
+        <div class="tab-content active" id="membersTab">
+            <!-- Stats Cards -->
+            <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalMembers">-</h3>
+                        <p>Total Membres</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="todayMembers">-</h3>
+                        <p>Aujourd'hui</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="festivalMembers">-</h3>
+                        <p>Festival 4NAP</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="activeMembers">-</h3>
+                        <p>Actifs (expire 2025)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters and Search -->
+        <section class="controls-section">
+            <div class="controls-grid">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Rechercher par nom, email...">
+                </div>
+                <div class="filter-group">
+                    <select id="memberTypeFilter">
+                        <option value="">Tous les types</option>
+                        <option value="4nap-festival">4NAP Festival</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="dateFilter">
+                        <option value="">Toutes les dates</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="week">Cette semaine</option>
+                        <option value="month">Ce mois</option>
+                    </select>
+                </div>
+                <div class="results-info">
+                    <span id="resultsCount">0 membres</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Members Table -->
+        <section class="table-section">
+            <div class="table-container">
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th data-sort="firstName">
+                                <span>Nom</span>
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="email">
+                                <span>Email</span>
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="end-member">
+                                <span>Fin d'abonnement</span>
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="createdAt">
+                                <span>Date d'inscription</span>
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="member-type">
+                                <span>Type membre</span>
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTableBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Pagination -->
+        <section class="pagination-section">
+            <div class="pagination-controls">
+                <button id="prevPage" class="btn-pagination" disabled>
+                    <i class="fas fa-chevron-left"></i> Précédent
+                </button>
+                <span class="pagination-info">
+                    Page <span id="currentPage">1</span> sur <span id="totalPages">1</span>
+                </span>
+                <button id="nextPage" class="btn-pagination" disabled>
+                    Suivant <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </section>
+        </div>
+
+        <!-- Interested Users Tab Content -->
+        <div class="tab-content" id="interestedTab">
+            <!-- Stats Cards for Interested -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalInterested">-</h3>
+                            <p>Total Intéressés</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="todayInterested">-</h3>
+                            <p>Aujourd'hui</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-week"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="weekInterested">-</h3>
+                            <p>Cette semaine</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="phoneInterested">-</h3>
+                            <p>Avec téléphone</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filters and Search for Interested -->
+            <section class="controls-section">
+                <div class="controls-grid">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInterestedInput" placeholder="Rechercher par nom, email...">
+                    </div>
+                    <div class="filter-group">
+                        <select id="interestedDateFilter">
+                            <option value="">Toutes les dates</option>
+                            <option value="today">Aujourd'hui</option>
+                            <option value="week">Cette semaine</option>
+                            <option value="month">Ce mois</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="phoneFilter">
+                            <option value="">Avec/sans téléphone</option>
+                            <option value="with">Avec téléphone</option>
+                            <option value="without">Sans téléphone</option>
+                        </select>
+                    </div>
+                    <div class="results-info">
+                        <span id="interestedResultsCount">0 intéressés</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interested Users Table -->
+            <section class="table-section">
+                <div class="table-container">
+                    <table class="members-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="firstname">
+                                    <span>Prénom</span>
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th data-sort="email">
+                                    <span>Email</span>
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th data-sort="phone">
+                                    <span>Téléphone</span>
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th data-sort="timestamp">
+                                    <span>Date d'intérêt</span>
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="interestedTableBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Pagination for Interested -->
+            <section class="pagination-section">
+                <div class="pagination-controls">
+                    <button id="prevPageInterested" class="btn-pagination" disabled>
+                        <i class="fas fa-chevron-left"></i> Précédent
+                    </button>
+                    <span class="pagination-info">
+                        Page <span id="currentPageInterested">1</span> sur <span id="totalPagesInterested">1</span>
+                    </span>
+                    <button id="nextPageInterested" class="btn-pagination" disabled>
+                        Suivant <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Member Detail Modal -->
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Détails du membre</h2>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="memberDetails">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button id="generateNewCard" class="btn-primary">
+                    <i class="fas fa-id-card"></i> Régénérer carte
+                </button>
+                <button id="resendEmail" class="btn-secondary">
+                    <i class="fas fa-envelope"></i> Renvoyer email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+        
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyALz161yfiLaOeHU82DQNJV4PkzAXO1wzM",
+            authDomain: "nap-7aa80.firebaseapp.com",
+            projectId: "nap-7aa80",
+            storageBucket: "nap-7aa80.firebasestorage.app",
+            messagingSenderId: "434731738248",
+            appId: "1:434731738248:web:481644f3a6e809c06d2b3d",
+            measurementId: "G-3HVC6HNG02"
+        };
+
+        // Initialiser Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Exposer db globalement pour le script admin
+        window.firebaseDB = db;
+    </script>
+    <script src="admin.js"></script>
+</body>
+</html> 

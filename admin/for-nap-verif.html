@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0b0f">
+    <title>ForNap Verify - Système de Vérification</title>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #20B2AA;
+            --primary-dark: #17A2B8;
+            --secondary: #1a1d29;
+            --surface: #242837;
+            --surface-light: #2d3142;
+            --text-primary: #ffffff;
+            --text-secondary: #8892b0;
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+            background: #0a0b0f;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Fond animé premium */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(32, 178, 170, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(23, 162, 184, 0.1) 0%, transparent 50%),
+                linear-gradient(180deg, #0a0b0f 0%, #13151a 100%);
+            z-index: -1;
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.02;
+            z-index: -1;
+            pointer-events: none;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSIxMCIvPjxmZUNvbG9yTWF0cml4IHR5cGU9InNhdHVyYXRlIiB2YWx1ZXM9IjAiLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgjYSkiIG9wYWNpdHk9IjEiLz48L3N2Zz4=');
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Header premium */
+        .header {
+            background: var(--secondary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 800;
+            box-shadow: 0 4px 20px rgba(32, 178, 170, 0.3);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        /* Contenu principal */
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            padding-bottom: 100px;
+        }
+
+        /* Écran d'authentification premium */
+        .auth-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: calc(100vh - 100px);
+            padding: 40px 0;
+        }
+
+        .auth-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .auth-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 24px;
+            box-shadow: 
+                0 10px 40px rgba(32, 178, 170, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .auth-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Champs de formulaire premium */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            padding-left: 48px;
+            background: var(--secondary);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(32, 178, 170, 0.05);
+            box-shadow: 
+                0 0 0 4px rgba(32, 178, 170, 0.1),
+                0 4px 20px rgba(32, 178, 170, 0.2);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 20px;
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        .form-input:focus + .input-icon {
+            color: var(--primary);
+        }
+
+        /* Boutons premium */
+        .btn {
+            width: 100%;
+            padding: 18px 24px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-transform: none;
+            letter-spacing: -0.3px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 
+                0 4px 20px rgba(32, 178, 170, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 30px rgba(32, 178, 170, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            opacity: 0;
+        }
+
+        .btn.loading .btn-text {
+            opacity: 0;
+        }
+
+        .btn.loading .btn-loader {
+            opacity: 1;
+        }
+
+        /* Interface principale */
+        .main-interface {
+            display: none;
+        }
+
+        /* Carte utilisateur */
+        .user-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-details {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(32, 178, 170, 0.3);
+        }
+
+        .user-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-email {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--error);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Section scanner premium */
+        .scanner-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .scanner-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .scanner-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .scanner-description {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .scanner-viewport {
+            position: relative;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            height: 300px;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.5),
+                inset 0 0 0 2px var(--border);
+        }
+
+        #scanner-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .scanner-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            pointer-events: none;
+        }
+
+        .scanner-corners {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .corner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--primary);
+        }
+
+        .corner-tl {
+            top: 0;
+            left: 0;
+            border-right: none;
+            border-bottom: none;
+            border-top-left-radius: 8px;
+        }
+
+        .corner-tr {
+            top: 0;
+            right: 0;
+            border-left: none;
+            border-bottom: none;
+            border-top-right-radius: 8px;
+        }
+
+        .corner-bl {
+            bottom: 0;
+            left: 0;
+            border-right: none;
+            border-top: none;
+            border-bottom-left-radius: 8px;
+        }
+
+        .corner-br {
+            bottom: 0;
+            right: 0;
+            border-left: none;
+            border-top: none;
+            border-bottom-right-radius: 8px;
+        }
+
+        .scanner-line {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            animation: scan 2s linear infinite;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        @keyframes scan {
+            0% { top: 10%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 90%; opacity: 0; }
+        }
+
+        .scanner-status {
+            text-align: center;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            animation: blink 1.5s infinite;
+        }
+
+        .status-indicator.active {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .status-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .status-text.active {
+            color: var(--success);
+        }
+
+        /* Résultats de vérification */
+        .verification-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: none;
+            z-index: 1000;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .verification-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .verification-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .verification-header {
+            padding: 32px 32px 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .verification-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .verification-icon.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            box-shadow: 
+                0 0 0 8px rgba(34, 197, 94, 0.05),
+                0 8px 24px rgba(34, 197, 94, 0.2);
+        }
+
+        .verification-icon.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            box-shadow: 
+                0 0 0 8px rgba(239, 68, 68, 0.05),
+                0 8px 24px rgba(239, 68, 68, 0.2);
+        }
+
+        .verification-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .verification-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .verification-body {
+            padding: 32px;
+        }
+
+        .member-photo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 700;
+            box-shadow: 
+                0 10px 40px rgba(32, 178, 170, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2);
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .info-item {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(2px);
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: right;
+        }
+
+        .status-badge-large {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge-large.active {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .status-badge-large.expired {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .verification-footer {
+            padding: 24px 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .close-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--surface-light);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* Messages */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        /* Actions rapides */
+        .quick-actions {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: var(--secondary);
+            color: var(--text-primary);
+        }
+
+        .action-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .header {
+                padding: 16px 20px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .auth-card {
+                padding: 32px 24px;
+            }
+            
+            .scanner-card {
+                padding: 24px;
+            }
+            
+            .scanner-viewport {
+                height: 250px;
+            }
+            
+            .quick-actions {
+                width: calc(100% - 48px);
+                bottom: 20px;
+            }
+        }
+
+        /* Loader premium */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Icons */
+        .icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+        }
+
+        /* Masquer par défaut */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sections de vue */
+        .view-section {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .section-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .section-description {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Statistiques */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .success-stat .stat-value {
+            color: var(--success);
+        }
+
+        .error-stat .stat-value {
+            color: var(--error);
+        }
+
+        /* Liste d'historique */
+        .history-list {
+            margin-bottom: 24px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(2px);
+        }
+
+        .history-status {
+            font-size: 24px;
+        }
+
+        .history-details {
+            flex: 1;
+        }
+
+        .history-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .history-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        /* Paramètres */
+        .settings-list {
+            margin-bottom: 32px;
+        }
+
+        .setting-item {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .setting-item:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-label {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .setting-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.3s;
+            border-radius: 28px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        input:disabled + .toggle-slider {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Section À propos */
+        .settings-section {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .settings-subtitle {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .about-info {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .about-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .about-item:not(:last-child) {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .about-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .about-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Bouton secondaire */
+        .btn-secondary {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--surface-light);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Responsive pour tablettes */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">🔥</div>
+                    <div class="logo-text">
+                        <div class="logo-title">ForNap Verify</div>
+                        <div class="logo-subtitle">Système de vérification</div>
+                    </div>
+                </div>
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    <span>Système actif</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Contenu principal -->
+        <main class="main-content">
+            <!-- Écran d'authentification -->
+            <div id="auth-screen" class="auth-screen">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="auth-icon">🔐</div>
+                        <h1 class="auth-title">Authentification</h1>
+                        <p class="auth-subtitle">Connectez-vous pour accéder au système</p>
+                    </div>
+                    
+                    <form id="auth-form">
+                        <div class="form-group">
+                            <label class="form-label">Adresse email</label>
+                            <div class="input-wrapper">
+                                <input type="email" id="auth-email" class="form-input" placeholder="agent@fornap.com" required>
+                                <span class="input-icon">📧</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Mot de passe</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="auth-password" class="form-input" placeholder="••••••••" required>
+                                <span class="input-icon">🔑</span>
+                            </div>
+                        </div>
+                        
+                        <div id="auth-error" class="alert alert-error"></div>
+                        
+                        <button type="submit" id="auth-btn" class="btn btn-primary">
+                            <span class="btn-text">Connexion sécurisée</span>
+                            <span class="btn-loader"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Interface principale -->
+            <div id="main-interface" class="main-interface">
+                <!-- Carte utilisateur -->
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-details">
+                            <div class="user-avatar">👤</div>
+                            <div class="user-text">
+                                <div class="user-role">Agent vérificateur</div>
+                                <div id="user-email" class="user-email">agent@fornap.com</div>
+                            </div>
+                        </div>
+                        <button id="logout-btn" class="logout-btn">Déconnexion</button>
+                    </div>
+                </div>
+
+                <!-- Section scanner -->
+                <div class="scanner-card">
+                    <div class="scanner-header">
+                        <h2 class="scanner-title">Scanner de vérification</h2>
+                        <p class="scanner-description">Positionnez le QR code du membre dans le cadre</p>
+                    </div>
+                    
+                    <div class="scanner-viewport">
+                        <video id="scanner-video" autoplay muted playsinline></video>
+                        <div class="scanner-frame">
+                            <div class="scanner-corners">
+                                <div class="corner corner-tl"></div>
+                                <div class="corner corner-tr"></div>
+                                <div class="corner corner-bl"></div>
+                                <div class="corner corner-br"></div>
+                            </div>
+                            <div class="scanner-line"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="scanner-status" class="scanner-status">
+                        <span id="status-indicator" class="status-indicator"></span>
+                        <span id="status-text" class="status-text">Scanner inactif</span>
+                    </div>
+                    
+                    <button id="scanner-toggle" class="btn btn-primary">
+                        <span class="btn-text">Activer le scanner</span>
+                        <span class="btn-loader"></span>
+                    </button>
+                </div>
+
+                <!-- Messages -->
+                <div id="error-message" class="alert alert-error"></div>
+                <div id="success-message" class="alert alert-success"></div>
+
+                <!-- Vue Historique -->
+                <div id="history-view" class="view-section hidden">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2 class="section-title">Historique des vérifications</h2>
+                            <p class="section-description">Consultez les 50 dernières vérifications</p>
+                        </div>
+                        
+                        <div id="history-stats" class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">📊</div>
+                                <div class="stat-content">
+                                    <div class="stat-value" id="total-scans">0</div>
+                                    <div class="stat-label">Total scanné</div>
+                                </div>
+                            </div>
+                            <div class="stat-card success-stat">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-content">
+                                    <div class="stat-value" id="valid-scans">0</div>
+                                    <div class="stat-label">Valides</div>
+                                </div>
+                            </div>
+                            <div class="stat-card error-stat">
+                                <div class="stat-icon">❌</div>
+                                <div class="stat-content">
+                                    <div class="stat-value" id="invalid-scans">0</div>
+                                    <div class="stat-label">Invalides</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="history-list" class="history-list">
+                            <!-- Les entrées d'historique seront insérées ici -->
+                        </div>
+                        
+                        <button id="clear-history" class="btn btn-secondary">
+                            <span class="btn-text">Effacer l'historique</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vue Paramètres -->
+                <div id="settings-view" class="view-section hidden">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2 class="section-title">Paramètres</h2>
+                            <p class="section-description">Configurez votre expérience</p>
+                        </div>
+                        
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-label">Sons de notification</div>
+                                    <div class="setting-description">Activer les sons lors des scans</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="sound-toggle" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-label">Vibration</div>
+                                    <div class="setting-description">Vibrer lors d'un scan réussi</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="vibration-toggle" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-label">Scanner automatique</div>
+                                    <div class="setting-description">Redémarrer le scanner après chaque scan</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="auto-scan-toggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-label">Mode sombre</div>
+                                    <div class="setting-description">Toujours actif pour cette interface</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked disabled>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h3 class="settings-subtitle">À propos</h3>
+                            <div class="about-info">
+                                <div class="about-item">
+                                    <span class="about-label">Version</span>
+                                    <span class="about-value">1.0.0</span>
+                                </div>
+                                <div class="about-item">
+                                    <span class="about-label">Développé par</span>
+                                    <span class="about-value">ForNap Team</span>
+                                </div>
+                                <div class="about-item">
+                                    <span class="about-label">Contact support</span>
+                                    <span class="about-value">support@fornap.com</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Actions rapides -->
+        <div class="quick-actions hidden" id="quick-actions">
+            <button class="action-btn active" data-view="scanner">
+                <span>📷</span>
+                <span>Scanner</span>
+            </button>
+            <button class="action-btn" data-view="history">
+                <span>📋</span>
+                <span>Historique</span>
+            </button>
+            <button class="action-btn" data-view="settings">
+                <span>⚙️</span>
+                <span>Paramètres</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de vérification -->
+    <div id="verification-modal" class="verification-modal">
+        <div class="verification-card">
+            <div class="verification-header">
+                <div id="verification-icon" class="verification-icon success">✓</div>
+                <h3 id="verification-title" class="verification-title">Membre vérifié</h3>
+                <p id="verification-subtitle" class="verification-subtitle">Abonnement actif jusqu'à fin 2025</p>
+            </div>
+            
+            <div class="verification-body">
+                <div id="member-photo" class="member-photo">👤</div>
+                <div id="member-info" class="info-grid">
+                    <!-- Les informations seront insérées ici -->
+                </div>
+            </div>
+            
+            <div class="verification-footer">
+                <button id="close-modal" class="close-btn">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module" src="verif-app.js"></script>
+
+    <!-- QR Code Scanner -->
+    <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+</body>
+</html> 
