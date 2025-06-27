@@ -844,23 +844,60 @@ class AdminPanel {
             return;
         }
 
-        // Simple et propre : juste les emails, un par ligne
-        const validEmails = this.filteredInterested
-            .filter(person => person.email && person.email.trim() !== '' && person.email.includes('@'))
-            .map(person => person.email.trim())
-            .sort(); // Tri alphabétique pour une meilleure lisibilité
-
-        const csvContent = validEmails.join('\n');
-
-        // Création du fichier avec BOM UTF-8 pour bien gérer les caractères français
-        const BOM = '\uFEFF';
-        const blob = new Blob([BOM + csvContent], { type: 'text/plain;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `emails-interesses-${this.formatDateForFilename(new Date())}.csv`;
-        link.click();
-        
-        this.showToast(`${validEmails.length} emails exportes avec succes !`, 'success');
+        try {
+            // Créer un workbook Excel
+            const wb = XLSX.utils.book_new();
+            
+            // Préparer les données avec en-têtes
+            const worksheetData = [
+                ['Prénom', 'Email', 'Téléphone', 'Date d\'intérêt'] // En-têtes
+            ];
+            
+            // Ajouter les données des intéressés
+            this.filteredInterested.forEach(person => {
+                worksheetData.push([
+                    person.firstname || '',
+                    person.email || '',
+                    person.phone || 'Non renseigné',
+                    this.formatDateShort(person.timestamp)
+                ]);
+            });
+            
+            // Créer la feuille de calcul
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+            
+            // Définir la largeur des colonnes
+            ws['!cols'] = [
+                { width: 20 }, // Prénom
+                { width: 35 }, // Email
+                { width: 15 }, // Téléphone
+                { width: 12 }  // Date
+            ];
+            
+            // Style pour l'en-tête (en gras)
+            const headerRange = XLSX.utils.decode_range(ws['!ref']);
+            for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (!ws[cellAddress]) continue;
+                ws[cellAddress].s = {
+                    font: { bold: true },
+                    fill: { fgColor: { rgb: "E0E0E0" } }
+                };
+            }
+            
+            // Ajouter la feuille au workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Personnes Intéressées");
+            
+            // Créer et télécharger le fichier Excel
+            const fileName = `donnees-interesses-${this.formatDateForFilename(new Date())}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            this.showToast(`${this.filteredInterested.length} personnes exportees avec succes !`, 'success');
+            
+        } catch (error) {
+            console.error('Erreur lors de l\'export Excel:', error);
+            this.showToast('Erreur lors de l\'export Excel', 'error');
+        }
     }
 
     getActiveInterestedFiltersDescription() {
