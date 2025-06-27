@@ -129,6 +129,11 @@ class AdminPanel {
             this.exportToCSV();
         });
 
+        // Bouton d'export des emails des intéressés
+        document.getElementById('exportInterestedEmailsBtn').addEventListener('click', () => {
+            this.exportInterestedEmails();
+        });
+
         // Pagination
         document.getElementById('prevPage').addEventListener('click', () => {
             if (this.currentPage > 1) {
@@ -831,6 +836,58 @@ class AdminPanel {
         link.click();
         
         this.showToast('Export CSV téléchargé avec succès', 'success');
+    }
+
+    exportInterestedEmails() {
+        if (this.filteredInterested.length === 0) {
+            this.showToast('Aucun interesse a exporter', 'warning');
+            return;
+        }
+
+        // Simple et propre : juste les emails, un par ligne
+        const validEmails = this.filteredInterested
+            .filter(person => person.email && person.email.trim() !== '' && person.email.includes('@'))
+            .map(person => person.email.trim())
+            .sort(); // Tri alphabétique pour une meilleure lisibilité
+
+        const csvContent = validEmails.join('\n');
+
+        // Création du fichier avec BOM UTF-8 pour bien gérer les caractères français
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { type: 'text/plain;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `emails-interesses-${this.formatDateForFilename(new Date())}.csv`;
+        link.click();
+        
+        this.showToast(`${validEmails.length} emails exportes avec succes !`, 'success');
+    }
+
+    getActiveInterestedFiltersDescription() {
+        const filters = [];
+        
+        if (this.interestedFilters.search) {
+            filters.push(`Recherche: "${this.interestedFilters.search}"`);
+        }
+        
+        if (this.interestedFilters.dateRange) {
+            const dateLabels = {
+                'today': 'Aujourd\'hui',
+                'week': 'Cette semaine',
+                'month': 'Ce mois'
+            };
+            filters.push(`Période: ${dateLabels[this.interestedFilters.dateRange]}`);
+        }
+        
+        if (this.interestedFilters.phone) {
+            const phoneLabels = {
+                'with': 'Avec téléphone',
+                'without': 'Sans téléphone'
+            };
+            filters.push(`Téléphone: ${phoneLabels[this.interestedFilters.phone]}`);
+        }
+        
+        return filters.length > 0 ? filters.join(', ') : 'Aucun filtre';
     }
 
     // Déduplication par email - garde le membre le plus récent
