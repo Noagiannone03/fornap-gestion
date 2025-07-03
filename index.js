@@ -245,30 +245,77 @@ async function generateAndSendQRCode(memberData) {
           </p>
           
           <p style="font-size: 1.1rem; line-height: 1.6;">
-            Merci d'avoir rejoint la communauté FOR+NAP !
+            <strong>Bienvenue dans la famille FOR+NAP !</strong> 🎵
           </p>
           
           <p style="font-size: 1.1rem; line-height: 1.6;">
-            Voici ta carte d'adhésion ainsi que ta place pour le festival 4NAP.<br>
-            Ce festival est le premier projet de musiques électroniques qui s'insère dans une démarche d'une durée de 12 ans au Fort Napoléon à La Seyne-sur-Mer.
+            Tu viens de rejoindre bien plus qu'un simple festival - tu fais maintenant partie d'une communauté passionnée qui va transformer le Fort Napoléon en un véritable laboratoire culturel.
           </p>
+          
+          <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <h3 style="color: #ff6b35; margin: 0 0 15px 0; font-size: 1.3rem;">🎫 Ta carte de membre inclut :</h3>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="margin: 8px 0; padding-left: 20px; position: relative;">
+                <span style="position: absolute; left: 0; color: #ff6b35;">◆</span>
+                <strong>Accès VIP au festival 4NAP</strong> (11-14 juillet)
+              </li>
+              <li style="margin: 8px 0; padding-left: 20px; position: relative;">
+                <span style="position: absolute; left: 0; color: #ff6b35;">◆</span>
+                <strong>Entrée gratuite</strong> à tous les événements du Fort (concerts, soirées, workshops)
+              </li>
+              <li style="margin: 8px 0; padding-left: 20px; position: relative;">
+                <span style="position: absolute; left: 0; color: #ff6b35;">◆</span>
+                <strong>Tarifs préférentiels</strong> sur les consommations et produits dérivés
+              </li>
+              <li style="margin: 8px 0; padding-left: 20px; position: relative;">
+                <span style="position: absolute; left: 0; color: #ff6b35;">◆</span>
+                <strong>Accès prioritaire</strong> aux ventes de billets et préventes
+              </li>
+              <li style="margin: 8px 0; padding-left: 20px; position: relative;">
+                <span style="position: absolute; left: 0; color: #ff6b35;">◆</span>
+                <strong>Invitations exclusives</strong> aux événements privés et avant-premières
+              </li>
+            </ul>
+          </div>
           
           <p style="font-size: 1.1rem; line-height: 1.6;">
-            Dès mi-septembre, le Fort Napoléon s'éveillera en un tiers lieu créatif et culturel foisonnant, proposant des résidences d'artistes, des concerts exaltants, des fêtes mémorables, des créations audacieuses et des ateliers inspirants. Ce sera un espace où l'on pourra vibrer, apprendre et partager tout au long de l'année.
+            <strong>Le projet FOR+NAP</strong> c'est 12 ans d'aventure culturelle au Fort Napoléon ! Dès septembre, ce lieu historique exceptionnel va renaître sous une nouvelle forme :
           </p>
           
-          <p style="font-size: 1.1rem; line-height: 1.6;">
-            Nous sommes ravis de t'accueillir dans cette nouvelle aventure<br>
-            et avons hâte de faire revivre ce lieu unique avec toi.
-          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 15px; margin: 20px 0;">
+            <div style="flex: 1; min-width: 250px; background: #2a2a2a; padding: 15px; border-radius: 8px;">
+              <h4 style="color: #ff6b35; margin: 0 0 10px 0;">🎭 Résidences d'artistes</h4>
+              <p style="margin: 0; font-size: 0.95rem; color: #ccc;">
+                Découvre les créations en cours, rencontre les artistes en résidence
+              </p>
+            </div>
+            <div style="flex: 1; min-width: 250px; background: #2a2a2a; padding: 15px; border-radius: 8px;">
+              <h4 style="color: #ff6b35; margin: 0 0 10px 0;">🎵 Concerts & Lives</h4>
+              <p style="margin: 0; font-size: 0.95rem; color: #ccc;">
+                Musique électronique, sessions acoustiques, performances live
+              </p>
+            </div>
+            <div style="flex: 1; min-width: 250px; background: #2a2a2a; padding: 15px; border-radius: 8px;">
+              <h4 style="color: #ff6b35; margin: 0 0 10px 0;">🎨 Ateliers créatifs</h4>
+              <p style="margin: 0; font-size: 0.95rem; color: #ccc;">
+                MAO, arts visuels, techniques du son, création collaborative
+              </p>
+            </div>
+          </div>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <p style="font-size: 1.1rem; line-height: 1.6; margin: 0;">
-              En attendant, on compte sur toi pour nous aider à faire connaître notre initiative, en particulier le 4 NAP festival qui se déroulera du 11 au 14 Juillet<br>
-              pour <strong>4 soirées, 4 thèmes,</strong><br>
-              <strong>1 expérience unique à découvrir sans modération</strong> ;)
+          <div style="text-align: center; margin: 30px 0; background: linear-gradient(135deg, #ff6b35, #ff8a65); padding: 25px; border-radius: 15px;">
+            <h3 style="color: #000; margin: 0 0 15px 0; font-size: 1.4rem;">🚀 FESTIVAL 4NAP - 11 AU 14 JUILLET</h3>
+            <p style="font-size: 1.1rem; line-height: 1.6; margin: 0; color: #000;">
+              <strong>4 SOIRÉES THÉMATIQUES</strong><br>
+              <strong>4 UNIVERS SONORES</strong><br>
+              <strong>1 EXPÉRIENCE INOUBLIABLE</strong><br><br>
+              <em>Prépare-toi à vivre quelque chose d'unique dans un cadre historique exceptionnel !</em>
             </p>
           </div>
+          
+          <p style="font-size: 1.1rem; line-height: 1.6;">
+            On compte sur toi pour faire vibrer cette communauté et partager cette aventure avec tes proches. Plus on sera nombreux, plus on pourra faire de belles choses ensemble !
+          </p>
           
           <div style="text-align: center; margin-top: 20px; color: #666;">
             <p>◆</p>
