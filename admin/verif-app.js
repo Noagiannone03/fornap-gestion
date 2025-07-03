@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import { getFirestore, collection, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, query, limit } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
 // Configuration Firebase ForNap
@@ -272,37 +272,97 @@ class ForNapVerifySystem {
     }
 
     async processQRCode(qrText) {
-        console.log('QR Code détecté:', qrText);
+        console.log('📱 QR Code détecté:', qrText);
         
         // Animation de scan
         this.updateScannerStatus('Analyse en cours...', true);
         
-        // Vérifier le format: FORNAP-MEMBER:{memberDocumentId}
-        if (!qrText.startsWith('FORNAP-MEMBER:')) {
-            this.showError('QR Code invalide');
-            this.updateScannerStatus('Scanner actif - En attente', true);
-            return;
-        }
+        // Extraction robuste de l'ID avec regex pour gérer tous les formats possibles
+        const memberId = this.extractMemberIdFromQR(qrText);
         
-        const memberId = qrText.replace('FORNAP-MEMBER:', '');
         if (!memberId) {
-            this.showError('ID membre invalide');
+            console.error('❌ Impossible d\'extraire l\'ID du QR code');
+            this.showError('QR Code invalide - Format incorrect');
+            if (this.settings.sound) this.playErrorSound();
             this.updateScannerStatus('Scanner actif - En attente', true);
             return;
         }
         
+        console.log('✅ ID membre extrait:', memberId);
         await this.verifyMember(memberId);
+    }
+
+    extractMemberIdFromQR(qrText) {
+        console.log('🔍 Analyse du QR code brut:', `"${qrText}"`);
+        
+        // Nettoyer le texte de tous les espaces superflus
+        const cleanText = qrText.trim();
+        
+        // Patterns supportés (avec et sans espaces)
+        const patterns = [
+            /^FORNAP-MEMBER:([a-zA-Z0-9-]+)$/,           // Format normal: FORNAP-MEMBER:id
+            /^FORNAP-MEMBER:\s+([a-zA-Z0-9-]+)$/,        // Avec espace après : FORNAP-MEMBER: id
+            /^FORNAP-MEMBER\s+:\s*([a-zA-Z0-9-]+)$/,     // Avec espaces: FORNAP-MEMBER : id
+            /^FORNAP-MEMBER\s*:\s*([a-zA-Z0-9-]+)\s*$/,  // Espaces partout: FORNAP-MEMBER : id  
+        ];
+        
+        for (let i = 0; i < patterns.length; i++) {
+            const match = cleanText.match(patterns[i]);
+            if (match) {
+                const extractedId = match[1].trim();
+                console.log(`✅ Pattern ${i + 1} match! ID extrait: "${extractedId}"`);
+                
+                // Vérifier que l'ID ressemble à un UUID (format attendu)
+                if (this.isValidUUID(extractedId)) {
+                    console.log('✅ ID valide (format UUID)');
+                    return extractedId;
+                } else {
+                    console.log('⚠️ ID extrait mais format suspect:', extractedId);
+                    return extractedId; // On accepte quand même
+                }
+            }
+        }
+        
+        console.error('❌ Aucun pattern reconnu pour:', cleanText);
+        console.log('💡 Formats supportés:');
+        console.log('   - FORNAP-MEMBER:id');
+        console.log('   - FORNAP-MEMBER: id');
+        console.log('   - FORNAP-MEMBER : id');
+        
+        return null;
+    }
+
+    isValidUUID(str) {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(str);
     }
 
     async verifyMember(memberId) {
         this.updateScannerStatus('Vérification en cours...', true);
         
         try {
+            // DEBUG: Afficher l'ID recherché
+            console.log('🔍 Recherche du membre avec ID:', memberId);
+            console.log('🔍 Collection ciblée: members');
+            console.log('🔍 Projet Firebase:', db.app.options.projectId);
+            
             // Récupérer les données du membre depuis Firebase
             const memberDoc = await getDoc(doc(db, 'members', memberId));
             
+            console.log('📄 Document trouvé:', memberDoc.exists());
+            if (memberDoc.exists()) {
+                console.log('📄 Données du document:', memberDoc.data());
+            }
+            
             if (!memberDoc.exists()) {
+                console.error('❌ Membre non trouvé avec ID:', memberId);
+                console.log('💡 Vérifiez que le document existe dans la collection "members"');
+                
+                // Diagnostic : lister quelques documents de la collection
+                await this.debugFirestoreCollection(memberId);
+                
                 this.showVerificationResult(false, 'Membre non trouvé', 'Aucun membre avec cet identifiant', null);
+                if (this.settings.sound) this.playErrorSound();
                 return;
             }
             
@@ -327,21 +387,46 @@ class ForNapVerifySystem {
         } catch (error) {
             console.error('Erreur de vérification:', error);
             this.showError('Erreur de vérification: ' + error.message);
+            if (this.settings.sound) this.playErrorSound();
         } finally {
             this.updateScannerStatus('Scanner actif - En attente', true);
         }
     }
 
     checkMembershipStatus(memberData) {
-        // Pour ForNap, l'abonnement est valide jusqu'à fin 2025
-        const expirationDate = new Date('2025-12-31');
+        console.log('🔍 Vérification statut membre avec données:', memberData);
+        
         const today = new Date();
+        console.log('📅 Date du jour:', today.toISOString());
         
-        // Vérifier si le membre a un statut de paiement réussi
-        const hasValidPayment = memberData.paymentStatus === 'success' || 
-                               memberData.status === 'confirmed';
+        // Utiliser la vraie date d'expiration depuis Firestore
+        let expirationDate;
+        if (memberData['end-member']) {
+            // Si c'est un timestamp Firestore
+            if (memberData['end-member'].toDate) {
+                expirationDate = memberData['end-member'].toDate();
+            } 
+            // Si c'est déjà une date
+            else if (memberData['end-member'] instanceof Date) {
+                expirationDate = memberData['end-member'];
+            }
+            // Si c'est une chaîne
+            else {
+                expirationDate = new Date(memberData['end-member']);
+            }
+        } else {
+            // Fallback sur 2025-12-31
+            expirationDate = new Date('2025-12-31');
+            console.log('⚠️ Pas de end-member trouvé, utilisation du fallback');
+        }
         
-        return hasValidPayment && today <= expirationDate;
+        console.log('📅 Date d\'expiration:', expirationDate.toISOString());
+        
+        // Vérifier si le membre est actif
+        const isActive = today <= expirationDate;
+        console.log(`✅ Membre ${isActive ? 'ACTIF' : 'EXPIRÉ'} (expire le ${expirationDate.toLocaleDateString('fr-FR')})`);
+        
+        return isActive;
     }
 
     showVerificationResult(isValid, title, subtitle, memberData) {
@@ -359,32 +444,76 @@ class ForNapVerifySystem {
         
         // Afficher les informations du membre
         if (memberData) {
-            // Photo avec initiales
-            const initials = (memberData.firstname?.[0] || '') + (memberData.lastname?.[0] || '');
+            console.log('📋 Affichage des données membre:', memberData);
+            
+            // Photo avec initiales (gérer firstName/lastName ET firstname/lastname)
+            const firstName = memberData.firstName || memberData.firstname || '';
+            const lastName = memberData.lastName || memberData.lastname || '';
+            const initials = (firstName[0] || '') + (lastName[0] || '');
             this.memberPhoto.textContent = initials || '👤';
             
             // Construire la grille d'informations
-            const birthdate = memberData.birthdate ? new Date(memberData.birthdate) : null;
-            const age = memberData.age || (birthdate ? this.calculateAge(birthdate) : null);
-            const registrationDate = memberData.timestamp ? 
-                new Date(memberData.timestamp).toLocaleDateString('fr-FR') : 'Non disponible';
+            const birthDate = memberData.birthDate || memberData.birthdate;
+            let age = null;
+            if (birthDate) {
+                // Gérer différents formats de date
+                const birthDateObj = typeof birthDate === 'string' ? 
+                    this.parseDate(birthDate) : new Date(birthDate);
+                age = this.calculateAge(birthDateObj);
+            }
+            
+            // Date d'inscription
+            let registrationDate = 'Non disponible';
+            if (memberData.createdAt) {
+                if (memberData.createdAt.toDate) {
+                    registrationDate = memberData.createdAt.toDate().toLocaleDateString('fr-FR');
+                } else {
+                    registrationDate = new Date(memberData.createdAt).toLocaleDateString('fr-FR');
+                }
+            } else if (memberData.timestamp) {
+                registrationDate = new Date(memberData.timestamp).toLocaleDateString('fr-FR');
+            }
             
             const statusBadge = isValid ? 
                 '<span class="status-badge-large active">✓ Actif</span>' :
                 '<span class="status-badge-large expired">✗ Expiré</span>';
             
+            // Calculer date d'expiration pour affichage
+            let expirationDisplay = 'Non définie';
+            if (memberData['end-member']) {
+                let expDate;
+                if (memberData['end-member'].toDate) {
+                    expDate = memberData['end-member'].toDate();
+                } else {
+                    expDate = new Date(memberData['end-member']);
+                }
+                expirationDisplay = expDate.toLocaleDateString('fr-FR');
+            }
+
             this.memberInfo.innerHTML = `
+                <div class="info-item status-highlight">
+                    <span class="info-label">Statut d'abonnement</span>
+                    <span class="info-value">${statusBadge}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Expire le</span>
+                    <span class="info-value expiration-date ${isValid ? 'active' : 'expired'}">${expirationDisplay}</span>
+                </div>
                 <div class="info-item">
                     <span class="info-label">Prénom</span>
-                    <span class="info-value">${memberData.firstname || 'Non renseigné'}</span>
+                    <span class="info-value">${firstName || 'Non renseigné'}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Nom</span>
-                    <span class="info-value">${memberData.lastname || 'Non renseigné'}</span>
+                    <span class="info-value">${lastName || 'Non renseigné'}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Email</span>
                     <span class="info-value">${memberData.email || 'Non renseigné'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Téléphone</span>
+                    <span class="info-value">${memberData.phone || 'Non renseigné'}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Âge</span>
@@ -392,19 +521,15 @@ class ForNapVerifySystem {
                 </div>
                 <div class="info-item">
                     <span class="info-label">Code postal</span>
-                    <span class="info-value">${memberData.zipcode || 'Non renseigné'}</span>
+                    <span class="info-value">${memberData.postalCode || memberData.zipcode || 'Non renseigné'}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Membre depuis</span>
                     <span class="info-value">${registrationDate}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">Statut</span>
-                    <span class="info-value">${statusBadge}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Type de compte</span>
-                    <span class="info-value">${memberData.type === 'member' ? 'Membre adhérent' : 'Intéressé'}</span>
+                    <span class="info-label">Type de membre</span>
+                    <span class="info-value">${memberData['member-type'] || 'Standard'}</span>
                 </div>
             `;
         } else {
@@ -416,9 +541,70 @@ class ForNapVerifySystem {
         this.verificationModal.classList.add('active');
     }
 
+    async debugFirestoreCollection(searchedId) {
+        try {
+            console.log('🔧 DIAGNOSTIC FIRESTORE - Recherche de membres...');
+            
+            // Lister les 5 premiers documents de la collection members
+            const membersQuery = query(collection(db, 'members'), limit(5));
+            const snapshot = await getDocs(membersQuery);
+            
+            console.log(`📊 Nombre de documents dans 'members': ${snapshot.size}`);
+            
+            if (snapshot.empty) {
+                console.log('⚠️ La collection "members" est vide !');
+                return;
+            }
+            
+            console.log('📋 Premiers documents de la collection "members":');
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                console.log(`   📄 ID: "${doc.id}"`);
+                console.log(`       Email: ${data.email || 'N/A'}`);
+                console.log(`       Nom: ${data.firstName || data.firstname || 'N/A'} ${data.lastName || data.lastname || 'N/A'}`);
+                console.log(`       UID dans data: ${data.uid || 'N/A'}`);
+                
+                // Vérifier si l'ID recherché correspond
+                if (doc.id === searchedId) {
+                    console.log('✅ TROUVÉ ! Le document existe avec cet ID');
+                } else if (data.uid === searchedId) {
+                    console.log('🔄 Le searchedId correspond au uid dans les données, pas à l\'ID du document');
+                }
+            });
+            
+            console.log(`🔍 ID recherché: "${searchedId}"`);
+            console.log(`🔍 Longueur ID: ${searchedId.length} caractères`);
+            
+        } catch (error) {
+            console.error('❌ Erreur lors du diagnostic Firestore:', error);
+        }
+    }
+
+    parseDate(dateString) {
+        // Gérer les formats français comme "06/10/1990" (JJ/MM/AAAA)
+        if (typeof dateString === 'string' && dateString.includes('/')) {
+            const parts = dateString.split('/');
+            if (parts.length === 3) {
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1; // Les mois commencent à 0 en JS
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day);
+            }
+        }
+        
+        // Fallback sur Date normale
+        return new Date(dateString);
+    }
+
     calculateAge(birthdate) {
         const today = new Date();
         const birth = new Date(birthdate);
+        
+        if (isNaN(birth.getTime())) {
+            console.warn('Date de naissance invalide:', birthdate);
+            return null;
+        }
+        
         let age = today.getFullYear() - birth.getFullYear();
         const monthDiff = today.getMonth() - birth.getMonth();
         
@@ -562,15 +748,20 @@ class ForNapVerifySystem {
             const dateStr = time.toLocaleDateString('fr-FR');
             const member = entry.memberData;
             
+            // Gérer les différents noms de champs
+            const firstName = member.firstName || member.firstname || 'Inconnu';
+            const lastName = member.lastName || member.lastname || '';
+            const postalCode = member.postalCode || member.zipcode;
+            
             return `
                 <div class="history-item">
                     <div class="history-status">${entry.isValid ? '✅' : '❌'}</div>
                     <div class="history-details">
                         <div class="history-name">
-                            ${member.firstname || 'Inconnu'} ${member.lastname || ''}
+                            ${firstName} ${lastName}
                         </div>
                         <div class="history-meta">
-                            ${member.email || 'Pas d\'email'} ${member.zipcode ? `• ${member.zipcode}` : ''}
+                            ${member.email || 'Pas d\'email'} ${postalCode ? `• ${postalCode}` : ''}
                         </div>
                     </div>
                     <div class="history-time">
@@ -625,13 +816,64 @@ class ForNapVerifySystem {
 
     // Effets sonores et vibration
     playSuccessSound() {
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBj2Gy/DWhDMFHm7A7OOZRwwUXrTp66hVFApGn+DyvmwhBj2Gy/DWhDMFHm7A7OOZRwwRWrbq7Z1SGwk7k9kGhQ');
-        audio.play().catch(() => {});
+        // Créer un vrai son de scanner BEEP de succès
+        this.generateScannerBeep(800, 0.3, 'success');
     }
 
     playErrorSound() {
-        const audio = new Audio('data:audio/wav;base64,UklGRiIGAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAGAACBiYuFfn59jZSRhHZzeJCZk3ZvbneUmZN2b253kZmVeHJyeY+Uj3x6fY+Sj317fJCSj317fJCSj317fJCSkH1+f5CRjn19gJGSkH1+f5CRjn19gJGSkH1+f5CRjn19gJGSkH1+f5CRjn19gJGRkH5/gZGQjn5/g5GRj39/hJGQjn+AhJGQjn');
-        audio.play().catch(() => {});
+        // Créer un son d'erreur distinctif type scanner professionnel
+        this.generateScannerBeep(350, 0.6, 'error');
+    }
+
+    generateScannerBeep(frequency, duration, type) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            if (type === 'success') {
+                // Double beep de succès : BEEP-beep
+                this.createBeep(audioContext, frequency, 0.15, 0);
+                setTimeout(() => {
+                    this.createBeep(audioContext, frequency * 1.2, 0.1, 0);
+                }, 180);
+            } else {
+                // Triple beep d'erreur descendant : BZZT-BZZT-BZZZT (comme les vrais scanners)
+                this.createBeep(audioContext, frequency, 0.2, 0);      // BZZT
+                setTimeout(() => {
+                    this.createBeep(audioContext, frequency * 0.8, 0.2, 0); // bzzt (plus grave)
+                }, 250);
+                setTimeout(() => {
+                    this.createBeep(audioContext, frequency * 0.6, 0.3, 0); // bzzzt (encore plus grave et long)
+                }, 500);
+            }
+        } catch (error) {
+            console.log('Audio context non disponible, fallback sur bip simple');
+            // Fallback si Web Audio API non disponible
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBj2Gy/DWhDMFHm7A7OOZRwwUXrTp66hVFApGn+DyvmwhBj2Gy/DWhDMFHm7A7OOZRwwRWrbq7Z1SGwk7k9kGhQ');
+            audio.play().catch(() => {});
+        }
+    }
+
+    createBeep(audioContext, frequency, duration, delay) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Configuration de l'oscillateur
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime + delay);
+        oscillator.type = 'square'; // Son plus net type scanner
+        
+        // Enveloppe du volume pour éviter les clics
+        const now = audioContext.currentTime + delay;
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.3, now + 0.01); // Montée rapide
+        gainNode.gain.linearRampToValueAtTime(0.3, now + duration - 0.01); // Maintien
+        gainNode.gain.linearRampToValueAtTime(0, now + duration); // Descente
+        
+        // Démarrage et arrêt
+        oscillator.start(now);
+        oscillator.stop(now + duration);
     }
 
     triggerVibration() {

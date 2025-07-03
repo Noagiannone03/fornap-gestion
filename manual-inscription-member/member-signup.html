@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le soutien - ForNap</title>
+    <link rel="stylesheet" href="member-signup.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Ionicons pour les icônes -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Interface d'accueil - Reproduction exacte du design de soutien -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Titre principal -->
+                <div class="main-title">
+                    <h1>Le soutien</h1>
+                </div>
+
+                <!-- Image placeholder au centre -->
+                <div class="center-image">
+                    <!-- 
+                    POUR CHANGER L'IMAGE :
+                    Remplacez la ligne SVG ci-dessous par :
+                    <img src="nom-de-votre-image.jpg" alt="Image ForNap" class="main-image" />
+                    Et mettez votre image dans le même dossier que ce fichier HTML
+                    -->
+                    <div class="placeholder-image">
+                        <img src="triangle.png" alt="Image ForNap" class="main-image" />
+                    </div>
+                </div>
+
+                <!-- Options de soutien -->
+                <div class="support-options">
+                    <!-- Soutien minimum 2€ -->
+                    <div class="support-option">
+                        <h3>Soutien minimum</h3>
+                        <button class="support-button" data-amount="2" data-type="minimum">
+                            <span class="amount">2 €</span>
+                        </button>
+                    </div>
+
+                    <!-- Soutien adhésion 2025 12€ -->
+                    <div class="support-option">
+                        <h3>Soutien adhésion 2025</h3>
+                        <button class="support-button" data-amount="12" data-type="adhesion">
+                            <span class="amount">12 €</span>
+                        </button>
+                    </div>
+
+                    <!-- Montant libre - donateur -->
+                    <div class="support-option custom-amount">
+                        <h3>montant libre - donateur</h3>
+                        <div class="custom-input-container">
+                            <input type="number" id="custom-amount" class="custom-amount-input" min="1" step="0.01" placeholder="......">
+                            <p class="input-instruction">écrire le montant ci-dessous</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bouton page suivante -->
+                <div class="next-button-container">
+                    <button class="next-button" id="proceed-button">
+                        <span>page suivante>></span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Phase 2: Formulaire d'adhésion - Reproduction exacte de la maquette -->
+    <div id="adhesion-form-phase" class="adhesion-form-phase">
+        <button class="adhesion-back-btn" onclick="goBackToChoice()">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        
+        <div class="adhesion-form-header">
+            <h1 class="adhesion-form-title">formulaire d'adhésion</h1>
+            
+            <div class="brand-section">
+                <h2 class="brand-name">FOR<span class="plus-white">+</span>NAP</h2>
+                <p class="brand-description">un nouveau tiers lieu<br>culturel et créatif</p>
+            </div>
+        </div>
+        
+        <form class="adhesion-form-container" id="adhesion-signup-form" autocomplete="off">
+            <input type="text" class="adhesion-input-field" placeholder="nom" name="lastname" autocomplete="off" required>
+            <input type="text" class="adhesion-input-field" placeholder="prénom" name="firstname" autocomplete="off" required>
+            <input type="date" class="adhesion-input-field" placeholder="date de naissance" name="birthdate" autocomplete="off" required>
+            <input type="text" class="adhesion-input-field" placeholder="code postal" name="zipcode" pattern="[0-9]{5}" autocomplete="off" required>
+            <input type="email" class="adhesion-input-field" placeholder="email" name="email" autocomplete="off" required>
+            <input type="tel" class="adhesion-input-field" placeholder="téléphone" name="phone" autocomplete="off" required>
+            
+            <button type="submit" class="adhesion-submit-btn">devenir membre</button>
+        </form>
+    </div>
+
+    <!-- Phase 3: Formulaire de prise de contact (reproduction de l'image jaune) -->
+    <div id="contact-form-phase" class="contact-form-phase">
+        <button class="contact-back-btn" onclick="goBackToChoice()">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        
+        <div class="contact-form-header">
+            <h1 class="contact-form-title">formulaire de prise de contact</h1>
+        </div>
+        
+        <form class="contact-form-container" id="contact-signup-form">
+            <input type="text" class="contact-input-field" placeholder="prénom" name="firstname" required>
+            <input type="email" class="contact-input-field" placeholder="email" name="email" required>
+            <input type="tel" class="contact-input-field" placeholder="téléphone" name="phone" required>
+            
+            <button type="submit" class="contact-submit-btn">envoi</button>
+        </form>
+    </div>
+
+    <!-- Phase 4: Écran de succès - Reproduction exacte de l'image -->
+    <div id="contact-success-phase" class="final-success-phase">
+        <div class="success-content-new">
+            <!-- Cœur rouge -->
+            <div class="heart-icon">
+                <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="#FF3B30" stroke="#FF3B30" stroke-width="2"/>
+                </svg>
+            </div>
+            
+            <!-- Titre principal -->
+            <h1 class="success-main-title">Merci<br>pour le soutien</h1>
+            
+            <!-- Sous-titre blanc -->
+            <h2 class="success-subtitle-white">content de te<br>compter<br>parmi nous :)</h2>
+            
+            <!-- Description du projet -->
+            <p class="project-description">
+                un nouveau tiers lieu<br>
+                culturel et créatif avec<br>
+                des événements trop cool<br>
+                des lieux de coworking<br>
+                des ateliers pour produire<br>
+                un bar, un café, un snack<br>
+                et tant de choses encore...
+            </p>
+            
+            <!-- Date d'ouverture -->
+            <p class="opening-date">ouverture mi Septembre</p>
+            
+            <!-- Bouton retour -->
+            <button class="return-home-btn" onclick="goBackToChoice()">
+                retourner à la page d'accueil
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyALz161yfiLaOeHU82DQNJV4PkzAXO1wzM",
+            authDomain: "nap-7aa80.firebaseapp.com",
+            projectId: "nap-7aa80",
+            storageBucket: "nap-7aa80.firebasestorage.app",
+            messagingSenderId: "434731738248",
+            appId: "1:434731738248:web:481644f3a6e809c06d2b3d",
+            measurementId: "G-3HVC6HNG02"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Expose Firebase functions globally
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.doc = doc;
+        window.setDoc = setDoc;
+    </script>
+
+    <!-- Square Web Payments SDK -->
+    <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <!-- jsPDF Library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Main JavaScript -->
+    <script src="member-signup.js?v=1.3.0"></script>
+</body>
+</html> 

@@ -1,0 +1,1107 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #FFD700; /* Fond jaune exact de l'image */
+    color: #000000; /* Texte noir */
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* Interface d'accueil - Reproduction exacte du design de soutien */
+.main-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+}
+
+.content-wrapper {
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+/* Titre principal "Le soutien" */
+.main-title {
+    margin-bottom: 20px;
+}
+
+.main-title h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #000000;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+/* Image placeholder au centre */
+.center-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.main-image {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    object-fit: cover;
+   
+   
+}
+
+/* Options de soutien */
+.support-options {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+    max-width: 300px; /* Largeur harmonisée avec les boutons */
+}
+
+.support-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+.support-option h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #000000;
+    margin: 0;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* Boutons de soutien */
+.support-button {
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 50px;
+    padding: 15px 40px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #000000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+}
+
+.support-button:hover {
+    background: #F5F5F5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.support-button.selected {
+    background: #000000;
+    color: #FFFFFF;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.support-button.selected::after {
+    content: '✓';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.amount {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+/* Montant personnalisé */
+.custom-amount .custom-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.custom-amount-input {
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 50px;
+    padding: 15px 30px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #000000;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.custom-amount-input::placeholder {
+    color: #666666;
+    font-weight: 400;
+}
+
+.custom-amount-input:focus {
+    border-color: #FF6B35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+    transform: translateY(-2px);
+}
+
+.custom-amount-input.error {
+    border-color: #FF6B6B;
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+    background: #FFF5F5;
+}
+
+.input-instruction {
+    font-size: 0.9rem;
+    color: #000000;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Bouton page suivante */
+.next-button-container {
+    margin-top: 40px;
+}
+
+.next-button {
+    background: #000000;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 50px;
+    padding: 18px 35px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.next-button:hover {
+    background: #333333;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.next-button:active {
+    transform: translateY(-1px);
+}
+
+.next-button:disabled {
+    background: #CCCCCC;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 30px 15px;
+    }
+    
+    .content-wrapper {
+        gap: 30px;
+    }
+    
+    .main-title h1 {
+        font-size: 2rem;
+    }
+    
+    .main-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .support-options {
+        gap: 25px;
+    }
+    
+    .support-option h3 {
+        font-size: 1.1rem;
+    }
+    
+    .support-button {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+    
+    .custom-amount-input {
+        padding: 12px 25px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 20px 10px;
+    }
+    
+    .content-wrapper {
+        gap: 25px;
+    }
+    
+    .main-title h1 {
+        font-size: 1.8rem;
+    }
+    
+    .main-image {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .support-options {
+        gap: 20px;
+        max-width: 300px;
+    }
+    
+    .support-option h3 {
+        font-size: 1rem;
+    }
+    
+    .support-button {
+        padding: 10px 25px;
+        font-size: 0.9rem;
+        min-width: 100px;
+    }
+    
+    .custom-amount-input {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+        min-width: 120px;
+    }
+    
+    .next-button {
+        padding: 15px 30px;
+        font-size: 1rem;
+    }
+}
+
+/* États cachés pour les autres sections */
+.hidden {
+    display: none;
+}
+
+/* Hide original content when phases are active */
+.adhesion-phase-active .container,
+.contact-phase-active .container,
+.success-phase-active .container {
+    display: none;
+}
+
+/* Phase 2: Formulaire d'adhésion - Reproduction exacte de la maquette */
+.adhesion-form-phase {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #0099CC; /* Nouvelle couleur demandée */
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 40px 20px 120px 20px;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+}
+
+.adhesion-form-phase.active {
+    transform: translateX(0);
+}
+
+.adhesion-form-header {
+    text-align: center;
+    margin-bottom: 40px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.adhesion-form-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 30px;
+    letter-spacing: -0.02em;
+    text-transform: lowercase;
+}
+
+.brand-section {
+    margin-bottom: 30px;
+}
+
+.brand-name {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #000000;
+    margin-bottom: 15px;
+    letter-spacing: 0.05em;
+}
+
+.plus-white {
+    color: #FFFFFF;
+}
+
+.brand-description {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #000000;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.adhesion-form-container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.adhesion-input-field {
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 50px;
+    padding: 18px 25px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #999999;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: none;
+}
+
+.adhesion-input-field::placeholder {
+    color: #999999;
+    font-weight: 500;
+}
+
+.adhesion-input-field:focus {
+    border-color: #000000;
+    color: #000000;
+    transform: translateY(-2px);
+}
+
+.adhesion-input-field:valid {
+    color: #000000;
+}
+
+.adhesion-submit-btn {
+    background: #40D8E6;
+    color: #000000;
+    border: 3px solid #000000;
+    border-radius: 50px;
+    padding: 18px 40px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+    text-transform: lowercase;
+}
+
+.adhesion-submit-btn:hover {
+    background: #35C4D1;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.adhesion-submit-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Bouton retour pour cette phase */
+.adhesion-back-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid #000000;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #000000;
+    backdrop-filter: blur(10px);
+}
+
+.adhesion-back-btn ion-icon {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.adhesion-back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation d'entrée pour les champs */
+.adhesion-input-field {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideInField 0.5s ease forwards;
+}
+
+.adhesion-input-field:nth-child(1) { animation-delay: 0.1s; }
+.adhesion-input-field:nth-child(2) { animation-delay: 0.2s; }
+.adhesion-input-field:nth-child(3) { animation-delay: 0.3s; }
+.adhesion-input-field:nth-child(4) { animation-delay: 0.4s; }
+.adhesion-input-field:nth-child(5) { animation-delay: 0.5s; }
+.adhesion-input-field:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes slideInField {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Phase 3: Formulaire de prise de contact */
+.contact-form-phase {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #FFD700;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px 120px 20px;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+}
+
+.contact-form-phase.active {
+    transform: translateX(0);
+}
+
+.contact-form-header {
+    text-align: center;
+    margin-bottom: 60px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.contact-form-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #000000;
+    margin-bottom: 0;
+    letter-spacing: -0.02em;
+}
+
+.contact-form-container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.contact-input-field {
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 50px;
+    padding: 18px 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #000000;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.contact-input-field::placeholder {
+    color: #000000;
+    font-weight: 600;
+}
+
+.contact-input-field:focus {
+    border-color: #FF6B35;
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.2);
+    transform: translateY(-2px);
+}
+
+.contact-submit-btn {
+    background: #000000;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 50px;
+    padding: 20px 40px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    text-transform: lowercase;
+}
+
+.contact-submit-btn:hover {
+    background: #333333;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+}
+
+.contact-submit-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Bouton retour pour la phase contact */
+.contact-back-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    background: rgba(0, 0, 0, 0.1);
+    border: 2px solid #000000;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #000000;
+    backdrop-filter: blur(10px);
+}
+
+.contact-back-btn ion-icon {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.contact-back-btn:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation d'entrée pour les champs de contact */
+.contact-input-field {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideInField 0.5s ease forwards;
+}
+
+.contact-input-field:nth-child(1) { animation-delay: 0.1s; }
+.contact-input-field:nth-child(2) { animation-delay: 0.2s; }
+.contact-input-field:nth-child(3) { animation-delay: 0.3s; }
+
+/* Phase 4: Écran de succès - Reproduction exacte de l'image */
+.final-success-phase {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #FFB6C1; /* Fond rose exact de l'image */
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+    transform: scale(0);
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.final-success-phase.active {
+    transform: scale(1);
+}
+
+.success-content-new {
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.heart-icon {
+    margin-bottom: 10px;
+}
+
+.heart-icon svg {
+    width: 120px;
+    height: 120px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.success-main-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #000000;
+    margin: 0;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.success-subtitle-white {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.project-description {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #000000;
+    margin: 20px 0;
+    line-height: 1.5;
+    text-align: justify;
+    text-align-last: justify; /* Force la justification même sur la dernière ligne */
+    text-justify: inter-word;
+    word-spacing: 0.2em; /* Contrôle l'espacement entre mots */
+    letter-spacing: 0.02em; /* Légère augmentation de l'espacement des lettres */
+    width: 100%;
+    max-width: 350px; /* Largeur optimale pour forcer les retours à la ligne */
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    box-sizing: border-box;
+}
+
+.opening-date {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #000000;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.return-home-btn {
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 50px;
+    padding: 15px 30px;
+    color: #000000;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+}
+
+.return-home-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.return-home-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive pour les phases */
+@media (max-width: 768px) {
+    .adhesion-form-phase,
+    .contact-form-phase {
+        padding: 30px 15px 120px 15px;
+    }
+    
+    .adhesion-form-title,
+    .contact-form-title {
+        font-size: 1.6rem;
+    }
+    
+    .adhesion-input-field,
+    .contact-input-field {
+        padding: 16px 20px;
+        font-size: 1rem;
+    }
+    
+    .adhesion-submit-btn,
+    .contact-submit-btn {
+        padding: 18px 35px;
+        font-size: 1.1rem;
+    }
+    
+    .adhesion-back-btn,
+    .contact-back-btn {
+        top: 20px;
+        left: 20px;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .success-content-new {
+        padding: 30px 20px;
+        gap: 15px;
+    }
+    
+    .heart-icon svg {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .success-main-title {
+        font-size: 2.8rem;
+    }
+    
+    .success-subtitle-white {
+        font-size: 1.8rem;
+    }
+    
+    .project-description {
+        font-size: 1.5rem;
+    }
+    
+    .opening-date {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .adhesion-form-phase,
+    .contact-form-phase {
+        padding: 30px 15px 150px 15px;
+        padding-bottom: calc(150px + env(safe-area-inset-bottom));
+    }
+    
+    .success-content-new {
+        padding: 20px 15px;
+        gap: 12px;
+    }
+    
+    .heart-icon svg {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .success-main-title {
+        font-size: 2.4rem;
+    }
+    
+    .success-subtitle-white {
+        font-size: 1.6rem;
+    }
+    
+    .project-description {
+        font-size: 1.4rem;
+    }
+    
+    .opening-date {
+        font-size: 1.3rem;
+    }
+    
+    .return-home-btn {
+        padding: 12px 25px;
+        font-size: 1rem;
+    }
+}
+
+/* Error Messages */
+.error-message {
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.15) 0%, rgba(255, 59, 48, 0.1) 100%);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+    color: #ff6b6b;
+    font-weight: 600;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    animation: shake 0.5s ease-in-out;
+    display: none;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Square Payment Form Styles */
+.square-payment-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #20B2AA 0%, #17A2B8 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.payment-form-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.payment-form-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 15px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.payment-form-header p {
+    font-size: 1.1rem;
+    margin: 8px 0;
+    opacity: 0.9;
+}
+
+.card-input-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    min-height: 80px;
+    max-width: 400px;
+    width: 100%;
+}
+
+.payment-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.payment-button {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+    min-width: 180px;
+}
+
+.payment-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+}
+
+.payment-button:active {
+    transform: translateY(-1px);
+}
+
+.payment-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.secondary-button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    min-width: 120px;
+}
+
+.secondary-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.payment-status {
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-weight: 500;
+}
+
+.payment-status .loading {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.payment-status .error {
+    background: rgba(255, 107, 107, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+/* Responsive pour les formulaires de paiement */
+@media (max-width: 768px) {
+    .square-payment-container {
+        padding: 15px;
+    }
+    
+    .payment-form-header {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .payment-form-header h2 {
+        font-size: 1.6rem;
+    }
+    
+    .card-input-container {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .payment-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .payment-button,
+    .secondary-button {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-form-header {
+        padding: 15px;
+    }
+    
+    .payment-form-header h2 {
+        font-size: 1.4rem;
+    }
+    
+    .payment-form-header p {
+        font-size: 1rem;
+    }
+    
+    .card-input-container {
+        padding: 15px;
+    }
+    
+    .payment-button,
+    .secondary-button {
+        padding: 12px 25px;
+        font-size: 1rem;
+    }
+}
+
+/* Animations */
+@keyframes slideInSquare {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.square-payment-container:not(.hidden) {
+    animation: slideInSquare 0.5s ease-out;
+}
+
+.square-payment-container > * {
+    animation: slideInSquare 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.payment-form-header {
+    animation-delay: 0.1s;
+}
+
+.card-input-container {
+    animation-delay: 0.2s;
+}
+
+.payment-buttons {
+    animation-delay: 0.3s;
+} 
