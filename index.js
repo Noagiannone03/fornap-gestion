@@ -173,14 +173,26 @@ async function generateAndSendQRCode(memberData) {
     const canvas = createCanvas(450, 800); // Légèrement plus large
     const ctx = canvas.getContext("2d");
 
-    // Ton image de carte de membre en background
-    const backgroundImageBase64 = "base 64";
+    // Créer un fond noir simple en attendant l'image
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, 450, 800);
     
-    // Charger ton image de background
-    const backgroundImg = await loadImage(backgroundImageBase64);
+    // Ajouter un cadre blanc
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 5;
+    ctx.strokeRect(10, 10, 430, 780);
     
-    // Dessiner ton background exact (garder les proportions)
-    ctx.drawImage(backgroundImg, 0, 0, 450, 800);
+    // Ajouter le titre FOR+NAP en haut
+    ctx.fillStyle = "#FFFFFF";
+    ctx.textAlign = "center";
+    ctx.font = "bold 40px Arial";
+    ctx.fillText("◆ FOR+NAP ◆", 225, 80);
+    
+    ctx.font = "24px Arial";
+    ctx.fillText("social club", 225, 120);
+    
+    ctx.font = "18px Arial";
+    ctx.fillText("Fort Napoléon - La Seyne sur Mer", 225, 150);
 
     // Générer le QR code comme image Buffer
     const qrBuffer = await QRCode.toBuffer(qrCodeData, {
