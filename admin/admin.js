@@ -177,6 +177,11 @@ class AdminPanel {
             }
         });
 
+        // Bouton renvoyer email
+        document.getElementById('resendEmail').addEventListener('click', () => {
+            this.resendMemberEmail();
+        });
+
         // Tri des colonnes
         document.querySelectorAll('th[data-sort]').forEach(th => {
             th.addEventListener('click', () => {
@@ -215,9 +220,9 @@ class AdminPanel {
                 allMembers.push({
                     id: doc.id,
                     ...data,
-                    // Convertir les timestamps en dates
-                    createdAt: data.createdAt?.toDate() || new Date(),
-                    'end-member': data['end-member']?.toDate() || new Date('2025-12-31')
+                    // Convertir les timestamps en dates de manière robuste
+                    createdAt: this.convertToDate(data.createdAt),
+                    'end-member': this.convertToDate(data['end-member']) || new Date('2025-12-31')
                 });
             });
 
@@ -258,8 +263,8 @@ class AdminPanel {
                 allInterested.push({
                     id: doc.id,
                     ...data,
-                    // Convertir le timestamp string en date
-                    timestamp: data.timestamp ? new Date(data.timestamp) : new Date()
+                    // Convertir le timestamp en date de manière robuste
+                    timestamp: this.convertToDate(data.timestamp)
                 });
             });
 
@@ -502,9 +507,6 @@ class AdminPanel {
                         <button class="btn-action view" title="Voir détails" onclick="adminPanel.viewMember('${member.id}')">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn-action card" title="Régénérer carte" onclick="adminPanel.regenerateCard('${member.id}')">
-                            <i class="fas fa-id-card"></i>
-                        </button>
                     </div>
                 </td>
             `;
@@ -680,6 +682,9 @@ class AdminPanel {
         const member = this.members.find(m => m.id === memberId);
         if (!member) return;
 
+        // Stocker l'ID du membre pour pouvoir l'utiliser dans les actions
+        this.currentMemberIdInModal = memberId;
+
         const modal = document.getElementById('memberModal');
         const details = document.getElementById('memberDetails');
         
@@ -793,20 +798,43 @@ class AdminPanel {
 
     closeModal() {
         document.getElementById('memberModal').classList.remove('show');
+        this.currentMemberIdInModal = null; // Nettoyer l'ID stocké
     }
 
-    async regenerateCard(memberId) {
+
+
+    async resendMemberEmail() {
         try {
-            this.showToast('Régénération de la carte en cours...', 'info');
+            // Récupérer l'ID du membre actuellement affiché
+            if (!this.currentMemberIdInModal) {
+                this.showToast('Impossible de récupérer les informations du membre', 'error');
+                return;
+            }
+
+            this.showToast('Envoi de l\'email en cours...', 'info');
             
-            // Ici, tu pourrais appeler ta Cloud Function pour régénérer et renvoyer la carte
-            // Pour l'instant, on simule juste
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Appeler la Cloud Function pour renvoyer l'email
+            const response = await fetch('https://us-central1-nap-7aa80.cloudfunctions.net/resendMemberEmail', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    memberId: this.currentMemberIdInModal
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.showToast(`Email renvoyé avec succès à ${result.memberEmail}`, 'success');
+            } else {
+                throw new Error(result.message || 'Erreur lors du renvoi de l\'email');
+            }
             
-            this.showToast('Carte régénérée et envoyée avec succès', 'success');
         } catch (error) {
-            console.error('Erreur lors de la régénération:', error);
-            this.showToast('Erreur lors de la régénération de la carte', 'error');
+            console.error('Erreur lors du renvoi de l\'email:', error);
+            this.showToast(`Erreur lors du renvoi de l'email: ${error.message}`, 'error');
         }
     }
 
@@ -945,6 +973,32 @@ class AdminPanel {
     }
 
     // Utilitaires
+    convertToDate(value) {
+        if (!value) return new Date();
+        
+        // Si c'est déjà une Date
+        if (value instanceof Date) return value;
+        
+        // Si c'est un Timestamp Firestore
+        if (value && typeof value.toDate === 'function') {
+            return value.toDate();
+        }
+        
+        // Si c'est un string ou un nombre
+        if (typeof value === 'string' || typeof value === 'number') {
+            const date = new Date(value);
+            return isNaN(date.getTime()) ? new Date() : date;
+        }
+        
+        // Si c'est un objet avec des propriétés seconds/nanoseconds (Timestamp sérialisé)
+        if (value && typeof value === 'object' && value.seconds) {
+            return new Date(value.seconds * 1000 + (value.nanoseconds || 0) / 1000000);
+        }
+        
+        // Par défaut, retourner une nouvelle date
+        return new Date();
+    }
+
     debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {

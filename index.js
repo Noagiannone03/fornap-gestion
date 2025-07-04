@@ -382,3 +382,66 @@ exports.validateQRCode = functions.https.onRequest(async (req, res) => {
     res.status(500).json({valid: false, message: "Erreur serveur"});
   }
 });
+
+// Fonction pour renvoyer l'email avec QR code (déclenchée depuis l'admin panel)
+exports.resendMemberEmail = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "GET, POST");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.status(200).send("");
+    return;
+  }
+
+  if (req.method !== "POST") {
+    res.status(405).json({success: false, message: "Method Not Allowed"});
+    return;
+  }
+
+  try {
+    const {memberId, email} = req.body;
+
+    if (!memberId && !email) {
+      res.status(400).json({success: false, message: "memberId ou email requis"});
+      return;
+    }
+
+    let memberDoc;
+    
+    // Chercher par memberId ou par email
+    if (memberId) {
+      memberDoc = await db.collection("members").doc(memberId).get();
+    } else {
+      const memberQuery = await db.collection("members")
+          .where("email", "==", email)
+          .limit(1)
+          .get();
+      
+      if (!memberQuery.empty) {
+        memberDoc = memberQuery.docs[0];
+      }
+    }
+
+    if (!memberDoc || !memberDoc.exists) {
+      res.status(404).json({success: false, message: "Membre non trouvé"});
+      return;
+    }
+
+    const memberData = memberDoc.data();
+    
+    // Utiliser la fonction existante pour générer et envoyer l'email
+    await generateAndSendQRCode(memberData);
+    
+    console.log(`Email renvoyé avec succès à ${memberData.email}`);
+    res.status(200).json({
+      success: true, 
+      message: `Email renvoyé avec succès à ${memberData.email}`,
+      memberEmail: memberData.email
+    });
+
+  } catch (error) {
+    console.error("Erreur lors du renvoi de l'email:", error);
+    res.status(500).json({success: false, message: "Erreur serveur", error: error.message});
+  }
+});
