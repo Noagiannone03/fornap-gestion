@@ -339,9 +339,12 @@ class AdminPanel {
 
         // Filtre type de membre
         if (this.filters.memberType) {
-            filtered = filtered.filter(member => 
-                member['member-type'] === this.filters.memberType
-            );
+            filtered = filtered.filter(member => {
+                if (this.filters.memberType === 'adhesion-annuel') {
+                    return member.ticketType && member.ticketType.trim().toLowerCase() === 'adhésion annuelle';
+                }
+                return member['member-type'] === this.filters.memberType;
+            });
         }
 
         // Filtre date
@@ -500,7 +503,7 @@ class AdminPanel {
                     <div class="member-date">${this.formatDate(member.createdAt)}</div>
                 </td>
                 <td>
-                    <div class="member-type">${this.escapeHtml(member['member-type'] || 'N/A')}</div>
+                    <div class="member-type">${this.escapeHtml(this.getDisplayMemberType(member))}</div>
                 </td>
                 <td>
                     <div class="action-buttons">
@@ -559,7 +562,10 @@ class AdminPanel {
     updateStats() {
         const total = this.members.length;
         const today = this.getTodayMembers();
-        const festival = this.members.filter(m => m['member-type'] === '4nap-festival').length;
+        const festival = this.members.filter(m => 
+            m['member-type'] === '4nap-festival' || 
+            (m.ticketType && m.ticketType.trim().toLowerCase() === 'adhésion annuelle')
+        ).length;
         const active = this.getActiveMembers();
 
         document.getElementById('totalMembers').textContent = total.toLocaleString();
@@ -704,7 +710,7 @@ class AdminPanel {
                 </div>
                 <div class="detail-group">
                     <div class="detail-label">Type de membre</div>
-                    <div class="detail-value">${this.escapeHtml(member['member-type'] || 'N/A')}</div>
+                    <div class="detail-value">${this.escapeHtml(this.getDisplayMemberType(member))}</div>
                 </div>
                 <div class="detail-group">
                     <div class="detail-label">Code postal</div>
@@ -847,7 +853,7 @@ class AdminPanel {
                 this.escapeCSV(member.firstName || ''),
                 this.escapeCSV(member.lastName || ''),
                 this.escapeCSV(member.email || ''),
-                this.escapeCSV(member['member-type'] || ''),
+                this.escapeCSV(this.getDisplayMemberType(member)),
                 this.escapeCSV(member.postalCode || ''),
                 this.escapeCSV(member.birthDate || ''),
                 this.escapeCSV(member.phone || ''),
@@ -973,6 +979,16 @@ class AdminPanel {
     }
 
     // Utilitaires
+    getDisplayMemberType(member) {
+        // Si le ticketType contient "Adhésion annuelle" (avec gestion des espaces), afficher "adhésion annuel"
+        if (member.ticketType && member.ticketType.trim().toLowerCase() === 'adhésion annuelle') {
+            return 'adhésion annuel';
+        }
+        
+        // Sinon, utiliser le member-type existant
+        return member['member-type'] || 'N/A';
+    }
+
     convertToDate(value) {
         if (!value) return new Date();
         
