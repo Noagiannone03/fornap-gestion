@@ -182,6 +182,19 @@ class AdminPanel {
             this.resendMemberEmail();
         });
 
+        // Boutons d'édition
+        document.getElementById('editMember').addEventListener('click', () => {
+            this.enableEditMode();
+        });
+
+        document.getElementById('saveMember').addEventListener('click', () => {
+            this.saveMemberChanges();
+        });
+
+        document.getElementById('cancelEdit').addEventListener('click', () => {
+            this.cancelEditMode();
+        });
+
         // Tri des colonnes
         document.querySelectorAll('th[data-sort]').forEach(th => {
             th.addEventListener('click', () => {
@@ -330,10 +343,16 @@ class AdminPanel {
 
         // Filtre de recherche
         if (this.filters.search) {
-            filtered = filtered.filter(member => 
+            filtered = filtered.filter(member =>
                 member.firstName?.toLowerCase().includes(this.filters.search) ||
                 member.lastName?.toLowerCase().includes(this.filters.search) ||
-                member.email?.toLowerCase().includes(this.filters.search)
+                member.email?.toLowerCase().includes(this.filters.search) ||
+                member.ticketType?.toLowerCase().includes(this.filters.search) ||
+                member.postalCode?.toLowerCase().includes(this.filters.search) ||
+                member.birthDate?.toLowerCase().includes(this.filters.search) ||
+                member.phone?.toLowerCase().includes(this.filters.search) ||
+                member.uid?.toLowerCase().includes(this.filters.search) ||
+                this.getDisplayMemberType(member)?.toLowerCase().includes(this.filters.search)
             );
         }
 
@@ -408,9 +427,11 @@ class AdminPanel {
 
         // Filtre de recherche
         if (this.interestedFilters.search) {
-            filtered = filtered.filter(person => 
+            filtered = filtered.filter(person =>
                 person.firstname?.toLowerCase().includes(this.interestedFilters.search) ||
-                person.email?.toLowerCase().includes(this.interestedFilters.search)
+                person.email?.toLowerCase().includes(this.interestedFilters.search) ||
+                person.phone?.toLowerCase().includes(this.interestedFilters.search) ||
+                person.type?.toLowerCase().includes(this.interestedFilters.search)
             );
         }
 
@@ -510,6 +531,9 @@ class AdminPanel {
                         <button class="btn-action view" title="Voir détails" onclick="adminPanel.viewMember('${member.id}')">
                             <i class="fas fa-eye"></i>
                         </button>
+                        <button class="btn-action delete" title="Supprimer" onclick="adminPanel.deleteMember('${member.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </td>
             `;
@@ -549,6 +573,9 @@ class AdminPanel {
                         </button>
                         <button class="btn-action card" title="Inviter" onclick="adminPanel.inviteInterested('${person.id}')">
                             <i class="fas fa-envelope"></i>
+                        </button>
+                        <button class="btn-action delete" title="Supprimer" onclick="adminPanel.deleteInterested('${person.id}')">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </td>
@@ -688,64 +715,218 @@ class AdminPanel {
         const member = this.members.find(m => m.id === memberId);
         if (!member) return;
 
-        // Stocker l'ID du membre pour pouvoir l'utiliser dans les actions
+        // Stocker l'ID du membre et les données originales pour pouvoir les utiliser dans les actions
         this.currentMemberIdInModal = memberId;
+        this.originalMemberData = { ...member };
+        this.isEditMode = false;
+
+        this.renderMemberDetails(member);
+        this.updateModalButtons();
 
         const modal = document.getElementById('memberModal');
+        modal.classList.add('show');
+    }
+
+    renderMemberDetails(member) {
         const details = document.getElementById('memberDetails');
-        
-        details.innerHTML = `
-            <div class="member-detail-grid">
-                <div class="detail-group">
-                    <div class="detail-label">Nom complet</div>
-                    <div class="detail-value">${this.escapeHtml(member.firstName || '')} ${this.escapeHtml(member.lastName || '')}</div>
-                </div>
-                <div class="detail-group">
-                    <div class="detail-label">Email</div>
-                    <div class="detail-value">${this.escapeHtml(member.email || '')}</div>
-                </div>
-                <div class="detail-group">
-                    <div class="detail-label">Type de billet</div>
-                    <div class="detail-value">${this.escapeHtml(member.ticketType || 'N/A')}</div>
-                </div>
-                <div class="detail-group">
-                    <div class="detail-label">Type de membre</div>
-                    <div class="detail-value">${this.escapeHtml(this.getDisplayMemberType(member))}</div>
-                </div>
-                <div class="detail-group">
-                    <div class="detail-label">Code postal</div>
-                    <div class="detail-value">${this.escapeHtml(member.postalCode || 'N/A')}</div>
-                </div>
-                <div class="detail-group">
-                    <div class="detail-label">Date de naissance</div>
-                    <div class="detail-value">${this.escapeHtml(member.birthDate || 'N/A')}</div>
-                </div>
-                <div class="detail-group">
-                    <div class="detail-label">Téléphone</div>
-                    <div class="detail-value">${this.escapeHtml(member.phone || 'N/A')}</div>
-                </div>
-                <div class="detail-group">
-                    <div class="detail-label">Date d'inscription</div>
-                    <div class="detail-value">${this.formatDate(member.createdAt)}</div>
-                </div>
-                <div class="detail-group">
-                    <div class="detail-label">Fin d'adhésion</div>
-                    <div class="detail-value">${this.formatDate(member['end-member'])}</div>
-                </div>
-                <div class="detail-group">
-                    <div class="detail-label">ID Unique</div>
-                    <div class="detail-value">${this.escapeHtml(member.uid || member.id)}</div>
-                </div>
-                <div class="qr-code-display">
-                    <div class="detail-label">QR Code Membre</div>
-                    <div style="font-family: monospace; padding: 10px; background: #333; border-radius: 4px; margin-top: 10px;">
-                        FORNAP-MEMBER:${this.escapeHtml(member.uid || member.id)}
+
+        if (this.isEditMode) {
+            details.innerHTML = `
+                <div class="member-detail-grid">
+                    <div class="detail-group">
+                        <div class="detail-label">Prénom</div>
+                        <input type="text" id="edit-firstName" class="detail-input" value="${this.escapeHtml(member.firstName || '')}">
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Nom</div>
+                        <input type="text" id="edit-lastName" class="detail-input" value="${this.escapeHtml(member.lastName || '')}">
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Email</div>
+                        <input type="email" id="edit-email" class="detail-input" value="${this.escapeHtml(member.email || '')}">
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Type de billet</div>
+                        <input type="text" id="edit-ticketType" class="detail-input" value="${this.escapeHtml(member.ticketType || '')}">
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Code postal</div>
+                        <input type="text" id="edit-postalCode" class="detail-input" value="${this.escapeHtml(member.postalCode || '')}">
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Date de naissance</div>
+                        <input type="text" id="edit-birthDate" class="detail-input" value="${this.escapeHtml(member.birthDate || '')}" placeholder="jj/mm/aaaa">
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Téléphone</div>
+                        <input type="tel" id="edit-phone" class="detail-input" value="${this.escapeHtml(member.phone || '')}">
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Date d'inscription</div>
+                        <div class="detail-value">${this.formatDate(member.createdAt)}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Fin d'adhésion</div>
+                        <input type="date" id="edit-endMember" class="detail-input" value="${this.formatDateForInput(member['end-member'])}">
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">ID Unique</div>
+                        <div class="detail-value">${this.escapeHtml(member.uid || member.id)}</div>
                     </div>
                 </div>
-            </div>
-        `;
-        
-        modal.classList.add('show');
+            `;
+        } else {
+            details.innerHTML = `
+                <div class="member-detail-grid">
+                    <div class="detail-group">
+                        <div class="detail-label">Prénom</div>
+                        <div class="detail-value">${this.escapeHtml(member.firstName || 'N/A')}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Nom</div>
+                        <div class="detail-value">${this.escapeHtml(member.lastName || 'N/A')}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">${this.escapeHtml(member.email || 'N/A')}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Type de billet</div>
+                        <div class="detail-value">${this.escapeHtml(member.ticketType || 'N/A')}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Type de membre</div>
+                        <div class="detail-value">${this.escapeHtml(this.getDisplayMemberType(member))}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Code postal</div>
+                        <div class="detail-value">${this.escapeHtml(member.postalCode || 'N/A')}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Date de naissance</div>
+                        <div class="detail-value">${this.escapeHtml(member.birthDate || 'N/A')}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Téléphone</div>
+                        <div class="detail-value">${this.escapeHtml(member.phone || 'N/A')}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Date d'inscription</div>
+                        <div class="detail-value">${this.formatDate(member.createdAt)}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Fin d'adhésion</div>
+                        <div class="detail-value">${this.formatDate(member['end-member'])}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">ID Unique</div>
+                        <div class="detail-value">${this.escapeHtml(member.uid || member.id)}</div>
+                    </div>
+                    <div class="qr-code-display">
+                        <div class="detail-label">QR Code Membre</div>
+                        <div style="font-family: monospace; padding: 10px; background: #333; color: white; border-radius: 4px; margin-top: 10px;">
+                            FORNAP-MEMBER:${this.escapeHtml(member.uid || member.id)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    updateModalButtons() {
+        const editBtn = document.getElementById('editMember');
+        const saveBtn = document.getElementById('saveMember');
+        const cancelBtn = document.getElementById('cancelEdit');
+        const resendBtn = document.getElementById('resendEmail');
+
+        if (this.isEditMode) {
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+            resendBtn.style.display = 'none';
+        } else {
+            editBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            resendBtn.style.display = 'inline-block';
+        }
+    }
+
+    enableEditMode() {
+        this.isEditMode = true;
+        const member = this.members.find(m => m.id === this.currentMemberIdInModal);
+        if (member) {
+            this.renderMemberDetails(member);
+            this.updateModalButtons();
+        }
+    }
+
+    cancelEditMode() {
+        this.isEditMode = false;
+        if (this.originalMemberData) {
+            this.renderMemberDetails(this.originalMemberData);
+            this.updateModalButtons();
+        }
+    }
+
+    async saveMemberChanges() {
+        try {
+            const updatedData = {
+                firstName: document.getElementById('edit-firstName').value.trim(),
+                lastName: document.getElementById('edit-lastName').value.trim(),
+                email: document.getElementById('edit-email').value.trim(),
+                ticketType: document.getElementById('edit-ticketType').value.trim(),
+                postalCode: document.getElementById('edit-postalCode').value.trim(),
+                birthDate: document.getElementById('edit-birthDate').value.trim(),
+                phone: document.getElementById('edit-phone').value.trim()
+            };
+
+            // Validation basique
+            if (!updatedData.firstName || !updatedData.lastName || !updatedData.email) {
+                this.showToast('Prénom, nom et email sont obligatoires', 'error');
+                return;
+            }
+
+            // Validation email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(updatedData.email)) {
+                this.showToast('Format d\'email invalide', 'error');
+                return;
+            }
+
+            // Gérer la date de fin d'adhésion
+            const endMemberInput = document.getElementById('edit-endMember').value;
+            if (endMemberInput) {
+                updatedData['end-member'] = new Date(endMemberInput + 'T00:00:00');
+            }
+
+            this.showToast('Sauvegarde en cours...', 'info');
+
+            // Import des fonctions Firestore
+            const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js');
+
+            // Mettre à jour dans Firestore
+            await updateDoc(doc(this.db, 'members', this.currentMemberIdInModal), updatedData);
+
+            // Mettre à jour localement
+            const memberIndex = this.members.findIndex(m => m.id === this.currentMemberIdInModal);
+            if (memberIndex !== -1) {
+                this.members[memberIndex] = { ...this.members[memberIndex], ...updatedData };
+                this.originalMemberData = { ...this.members[memberIndex] };
+            }
+
+            // Mettre à jour l'affichage
+            this.applyFilters();
+            this.isEditMode = false;
+            this.renderMemberDetails(this.members[memberIndex]);
+            this.updateModalButtons();
+
+            this.showToast('Membre modifié avec succès', 'success');
+
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde:', error);
+            this.showToast('Erreur lors de la sauvegarde des modifications', 'error');
+        }
     }
 
     viewInterested(personId) {
@@ -804,10 +985,84 @@ class AdminPanel {
 
     closeModal() {
         document.getElementById('memberModal').classList.remove('show');
-        this.currentMemberIdInModal = null; // Nettoyer l'ID stocké
+        this.currentMemberIdInModal = null;
+        this.originalMemberData = null;
+        this.isEditMode = false;
     }
 
 
+
+    async deleteMember(memberId) {
+        const member = this.members.find(m => m.id === memberId);
+        if (!member) {
+            this.showToast('Membre non trouvé', 'error');
+            return;
+        }
+
+        const confirmMessage = `Êtes-vous sûr de vouloir supprimer le membre:\n\n${member.firstName} ${member.lastName}\n${member.email}\n\nCette action est irréversible !`;
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        try {
+            this.showToast('Suppression en cours...', 'info');
+
+            // Import des fonctions Firestore
+            const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js');
+
+            // Supprimer le document de Firestore
+            await deleteDoc(doc(this.db, 'members', memberId));
+
+            // Supprimer localement
+            this.members = this.members.filter(m => m.id !== memberId);
+            this.applyFilters();
+            this.updateStats();
+            this.updateTabCounts();
+
+            this.showToast(`Membre ${member.firstName} ${member.lastName} supprimé avec succès`, 'success');
+
+        } catch (error) {
+            console.error('Erreur lors de la suppression:', error);
+            this.showToast('Erreur lors de la suppression du membre', 'error');
+        }
+    }
+
+    async deleteInterested(personId) {
+        const person = this.interested.find(p => p.id === personId);
+        if (!person) {
+            this.showToast('Personne non trouvée', 'error');
+            return;
+        }
+
+        const confirmMessage = `Êtes-vous sûr de vouloir supprimer la personne intéressée:\n\n${person.firstname}\n${person.email}\n\nCette action est irréversible !`;
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        try {
+            this.showToast('Suppression en cours...', 'info');
+
+            // Import des fonctions Firestore
+            const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js');
+
+            // Supprimer le document de Firestore
+            await deleteDoc(doc(this.db, 'interested_users', personId));
+
+            // Supprimer localement
+            this.interested = this.interested.filter(p => p.id !== personId);
+            this.applyInterestedFilters();
+            this.updateInterestedStats();
+            this.updateTabCounts();
+
+            this.showToast(`Personne ${person.firstname} supprimée avec succès`, 'success');
+
+        } catch (error) {
+            console.error('Erreur lors de la suppression:', error);
+            this.showToast('Erreur lors de la suppression de la personne', 'error');
+        }
+    }
 
     async resendMemberEmail() {
         try {
@@ -1087,6 +1342,12 @@ class AdminPanel {
 
     formatDateForFilename(date) {
         return new Intl.DateTimeFormat('fr-CA').format(date).replace(/-/g, '');
+    }
+
+    formatDateForInput(date) {
+        if (!date) return '';
+        const d = new Date(date);
+        return d.toISOString().split('T')[0];
     }
 
     showLoading() {

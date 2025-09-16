@@ -873,4 +873,82 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-color);
+}
+
+/* ===== ADDITIONAL STYLES FOR NEW FEATURES ===== */
+
+/* Delete button styling */
+.btn-action.delete:hover {
+    border-color: var(--error-color);
+    color: var(--error-color);
+}
+
+/* Edit input styling */
+.detail-input {
+    background: var(--background-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    width: 100%;
+    transition: all var(--transition-fast);
+}
+
+.detail-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.2);
+}
+
+.detail-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Modal button variations */
+.btn-secondary {
+    background: var(--background-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.btn-secondary:hover {
+    background: var(--background-hover);
+    border-color: var(--accent-color);
+    transform: translateY(-1px);
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid var(--error-color);
+    color: var(--error-color);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.btn-cancel:hover {
+    background: var(--error-color);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+
+/* Modal footer button spacing */
+.modal-footer {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
 } 
